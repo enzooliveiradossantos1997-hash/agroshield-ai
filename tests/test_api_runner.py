@@ -4,6 +4,10 @@ Author: Enzo Oliveira dos Santos
 Field: Production-Grade Quality Assurance & Verification
 """
 
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 import unittest
 from fastapi.testclient import TestClient
 from src.api.main import app, load_artifacts
