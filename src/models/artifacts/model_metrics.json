@@ -1,0 +1,76 @@
+{
+  "model_type": "RandomForestClassifier",
+  "n_estimators": 150,
+  "n_samples": 3200,
+  "accuracy_pct": 98.44,
+  "f1_macro": 0.9807,
+  "cv_f1_mean": 0.9803,
+  "feature_importances": {
+    "grain_moisture_pct": 0.4474,
+    "temp_gradient_c": 0.2649,
+    "ambient_temp_c": 0.0906,
+    "grain_temp_c": 0.088,
+    "crop_code": 0.0387,
+    "emc_pct": 0.0269,
+    "ambient_rh_pct": 0.023,
+    "days_in_storage": 0.0203
+  },
+  "confusion_matrix": [
+    [
+      90,
+      1,
+      0
+    ],
+    [
+      2,
+      426,
+      0
+    ],
+    [
+      0,
+      7,
+      114
+    ]
+  ],
+  "classification_report": {
+    "SAFE": {
+      "precision": 0.9782608695652174,
+      "recall": 0.989010989010989,
+      "f1-score": 0.9836065573770492,
+      "support": 91.0
+    },
+    "WARNING_AERATE": {
+      "precision": 0.9815668202764977,
+      "recall": 0.9953271028037384,
+      "f1-score": 0.988399071925754,
+      "support": 428.0
+    },
+    "CRITICAL_MOLD": {
+      "precision": 1.0,
+      "recall": 0.9421487603305785,
+      "f1-score": 0.9702127659574468,
+      "support": 121.0
+    },
+    "accuracy": 0.984375,
+    "macro avg": {
+      "precision": 0.9866092299472383,
+      "recall": 0.9754956173817687,
+      "f1-score": 0.9807394650867499,
+      "support": 640.0
+    },
+    "weighted avg": {
+      "precision": 0.9845817784512121,
+      "recall": 0.984375,
+      "f1-score": 0.984279287791227,
+      "support": 640.0
+    }
+  },
+  "training_metadata": {
+    "author": "Enzo Oliveira dos Santos",
+    "jurisdiction": "Iowa (Midwest US Grain Corridor)",
+    "standards": [
+      "ASAE D245.5",
+      "NOAA GHCN"
+    ]
+  }
+}
