@@ -12,4 +12,8 @@ data/processed/*
 */.ipynb_checkpoints/
 .coverage
 htmlcov/
+*.db
+*.sqlite
+*.sqlite3
+
 

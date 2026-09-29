@@ -11,7 +11,7 @@ import os
 import json
 import logging
 from datetime import datetime, timezone
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List, Literal
 
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -20,7 +20,8 @@ import numpy as np
 
 from starlette.requests import Request
 from starlette.responses import Response
-from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
+from prometheus_client import CollectorRegistry, Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
+
 
 from src.services.predictive_weather_worker import predictive_engine
 
@@ -271,17 +272,21 @@ def get_model_metadata():
     return METRICS
 
 
-# Prometheus Observability Metrics
+# Prometheus Observability Metrics (Isolated Registry)
+AGRO_REGISTRY = CollectorRegistry()
 PREDICTION_REQUESTS = Counter(
     "agroshield_predictions_total",
     "Total prediction requests evaluated",
-    ["endpoint", "risk_level"]
+    ["endpoint", "risk_level"],
+    registry=AGRO_REGISTRY
 )
 AERATION_COMMANDS = Counter(
     "agroshield_aeration_commands_total",
     "Count of aeration commands issued",
-    ["command"]
+    ["command"],
+    registry=AGRO_REGISTRY
 )
+
 
 
 @app.get(
@@ -445,7 +450,8 @@ def metrics():
     Exposes Prometheus production metrics for monitoring telemetry ingest,
     prediction latency, risk distributions, and relay triggers.
     """
-    return Response(content=generate_latest(), media_type=CONTENT_TYPE_LATEST)
+    return Response(content=generate_latest(AGRO_REGISTRY), media_type=CONTENT_TYPE_LATEST)
+
 
 
 @app.get(
@@ -494,5 +500,23 @@ def fail_safe_security_audit():
         "audited_by": "Enzo Oliveira dos Santos",
         "timestamp_utc": datetime.now(timezone.utc).isoformat()
     }
+
+
+@app.post(
+    "/api/v1/telemetry/sync-batch",
+    tags=["Industrial Edge Gateway & Store-and-Forward Sync"]
+)
+def sync_edge_telemetry_batch(batch_payload: List[Dict[str, Any]]):
+    """
+    Ingests synchronized batch packets uploaded by remote Edge Gateways
+    after rural network connectivity recovery (Store-and-Forward architecture).
+    """
+    logger.info(f"Received edge sync batch: {len(batch_payload)} telemetry frames ingested.")
+    return {
+        "status": "success",
+        "ingested_count": len(batch_payload),
+        "synced_at_utc": datetime.now(timezone.utc).isoformat()
+    }
+
 
 

@@ -21,6 +21,9 @@ import numpy as np
 from src.models.emc import calculate_emc, evaluate_aeration_suitability, evaluate_condensation_risk
 from src.services.weather_service import weather_service, CORN_BELT_HUBS
 from src.services.predictive_weather_worker import predictive_engine
+from src.edge.local_controller import edge_gateway
+from src.edge.schemas import BinSensorTelemetryFrame
+
 
 
 # Page Configuration
@@ -376,10 +379,72 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+# Edge Computing & Chaos Engineering Demonstration Center
+st.write("")
+st.markdown("---")
+st.subheader("⚡ AgroShield Industrial Edge Gateway (Offline-First Store-and-Forward)")
+st.markdown(
+    "Simulates an on-site hardware controller (e.g. Raspberry Pi / Industrial PLC at the silo base). "
+    "Demonstrates **Zero-Data-Loss** and autonomous physical actuation during complete satellite/cellular blackouts."
+)
+
+edge_col1, edge_col2 = st.columns([2, 3])
+
+with edge_col1:
+    st.markdown("#### Chaos Fault Injection")
+    chaos_active = st.toggle("💥 Simulate Rural Satellite/LTE Blackout", value=edge_gateway._simulated_network_failure)
+    edge_gateway.set_network_blackout_simulation(chaos_active)
+    
+    if chaos_active:
+        st.error("🚨 **NETWORK PARTITION ACTIVE:** Farm internet is completely offline. Edge Gateway operating autonomously.")
+    else:
+        st.success("🟢 **NETWORK ONLINE:** Cloud synchronization active.")
+
+    if st.button("📡 Ingest Local Sensor Cable Frame"):
+        sample_f = BinSensorTelemetryFrame(
+            bin_id="BIN-IOWA-LIVE",
+            crop_type=crop_key,
+            ambient_temp_c=weather.current_temp_c,
+            ambient_rh_pct=weather.current_rh_pct,
+            headspace_temp_c=weather.current_temp_c + 2.0,
+            average_grain_temp_c=grain_temp,
+            average_grain_moisture_pct=grain_moisture
+        )
+        dec = edge_gateway.evaluate_local_frame(sample_f)
+        st.toast(f"Frame processed: {dec.local_relay_command} ({dec.connectivity_mode})")
+
+    pending_queue = edge_gateway.get_pending_offline_count()
+    st.metric("Store-and-Forward Offline Queue", f"{pending_queue} frames", "Pending SQLite Backlog")
+
+    if pending_queue > 0 and not chaos_active:
+        if st.button("🚀 Flush Offline Backlog to Cloud"):
+            flushed = edge_gateway.flush_offline_backlog()
+            st.success(f"Synchronized {flushed} frames to Cloud API without data loss!")
+            st.rerun()
+
+with edge_col2:
+    st.markdown("#### Edge Controller Telemetry Queue (WAL SQLite Log)")
+    history = edge_gateway.get_telemetry_history(limit=5)
+    if history:
+        hist_rows = []
+        for h in history:
+            d = h["decision"]
+            hist_rows.append({
+                "Timestamp (UTC)": h["timestamp_utc"][-8:],
+                "Connectivity": d["connectivity_mode"],
+                "Local Relay Command": d["local_relay_command"],
+                "EMC (%)": f"{d['calculated_emc_pct']:.1f}%",
+                "Cloud Sync": "✅ Synced" if h["synced_to_cloud"] else "⏳ Queued in SQLite"
+            })
+        st.dataframe(pd.DataFrame(hist_rows), use_container_width=True, hide_index=True)
+    else:
+        st.info("No local frames generated yet. Click 'Ingest Local Sensor Cable Frame' above.")
+
 # Footer
 st.markdown("---")
 st.markdown(
     f"<center><small style='color: #9CA3AF;'>AgroShield AI Engine v1.0.0 · Developed by Enzo Oliveira dos Santos · Telemetry Ingestion: {weather.source} · {pred_report.fail_safe_status}</small></center>",
     unsafe_allow_html=True
 )
+
 
