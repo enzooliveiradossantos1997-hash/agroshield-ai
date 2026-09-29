@@ -5,10 +5,11 @@
   <img src="https://img.shields.io/badge/Machine%20Learning-Random%20Forest%20Ensemble-blue?style=for-the-badge">
   <img src="https://img.shields.io/badge/Jurisdiction-Iowa%20Corn%20Belt-orange?style=for-the-badge">
   <img src="https://img.shields.io/badge/Build-Passing-brightgreen?style=for-the-badge">
+  <img src="https://img.shields.io/badge/Tests-26%20Passed-brightgreen?style=for-the-badge">
 </p>
 
-> **Autonomous predictive system designed to prevent post-harvest grain spoilage, thermal shock condensation, and mycotoxin loss across United States storage bins.**  
-> Developed and Engineered by **Enzo Oliveira dos Santos**.
+> **Autonomous predictive and fail-safe system designed to prevent post-harvest grain spoilage, thermal shock condensation, and mycotoxin loss across United States storage bins.**  
+> Developed and Engineered by **Enzo Oliveira dos Santos** (Agribusiness Specialist & M.Sc. Candidate in Software Engineering).
 
 ---
 
@@ -25,10 +26,16 @@ In the Midwest (Iowa, Illinois, Nebraska), extreme weather swings in autumn and 
 
 ---
 
-## 🏛️ System Architecture
+## 🏛️ System Architecture & Dual-Consensus Safety Protocol
 
 ```
-                  NOAA Climate Ingestion (Iowa GHCN)
+                  NOAA Mesoscale Ingestion (Live + 72h Forecast)
+                                  │
+                                  ▼
+           ┌──────────────────────────────────────────────┐
+           │   Autonomous Watchdog (Hourly Telemetry)     │
+           │        72h Safe Aeration Scheduling          │
+           └──────────────────────┬───────────────────────┘
                                   │
                                   ▼
            ┌──────────────────────────────────────────────┐
@@ -46,14 +53,23 @@ In the Midwest (Iowa, Illinois, Nebraska), extreme weather swings in autumn and 
                                   │
                                   ▼
            ┌──────────────────────────────────────────────┐
-           │          FastAPI Resilient Microservice      │
-           │  Pydantic Boundary Guard + Graceful Fallback │
+           │   FastAPI Resilient Microservice + Fail-Safe │
+           │   Security Headers + Hard Hardware Lockout   │
            └──────────────────────┬───────────────────────┘
                                   │
           ┌───────────────────────┴───────────────────────┐
           ▼                                               ▼
-[Automated Aeration Relays]                  [Agronomic Decision Dashboard]
+[Automated Aeration Relays]                  [Executive Decision Console]
+(FAN_RELAY_LOCKOUT / STAGE 1 / STAGE 2)     (Streamlit Financial ROI Audit)
 ```
+
+---
+
+## 🛡️ Zero-Failure Assurance (Dual-Consensus Protocol)
+
+* **Layer 1 (Statistical ML):** Scikit-Learn Random Forest Classifier predicts spoilage probability (98.44% accuracy).
+* **Layer 2 (Deterministic Agrophysics):** Modified Henderson-Thompson physical boundary guardrail.
+* **Fail-Safe Override:** If Layer 1 and Layer 2 ever conflict, **Layer 2 (Agrophysical Safety) always overrides Layer 1**. If outside ambient EMC exceeds grain moisture + 0.8%, fan relays are unconditionally locked at the hardware level.
 
 ---
 
@@ -66,14 +82,13 @@ $$M_{\text{dry}} = \left[ \frac{-\ln(1 - \text{RH})}{K \cdot (T + C)} \right]^{\
 * **Corn (Dent Yellow):** $K = 8.6541 \times 10^{-5}, \quad C = 49.810, \quad N = 1.8634$
 * **Soybeans:** $K = 1.1172 \times 10^{-4}, \quad C = 91.560, \quad N = 1.7010$
 
-If outside $\text{EMC} > M_{\text{grain}} + 0.8\%$, fan operation is locked to prevent re-wetting dry grain.
-
 ---
 
-## 📊 Benchmark Results
+## 📊 Benchmark Results & Test Suite
 
 | Metric | Result | Standard / Method |
 | :--- | :---: | :--- |
+| **Automated Test Suite** | **26 / 26 Passed (100%)** | Pytest & Unittest CI/CD |
 | **Test Accuracy** | **98.44%** | Stratified Holdout (640 samples) |
 | **F1-Score (Macro)** | **0.9807** | Multi-class (Safe / Aerate / Critical) |
 | **5-Fold Cross Validation** | **0.9803 $\pm$ 0.0112** | 5-Fold Stratified CV |
@@ -91,29 +106,35 @@ cd agroshield-ai
 pip install -r requirements.txt
 ```
 
-### 2. Run the Automated Test Suite (Unittest)
+### 2. Run the Full Test Suite
 ```bash
-python -m unittest tests/test_api_runner.py -v
+python -m pytest tests/ -v
 ```
-*Expected: 8/8 tests pass with 100% OK.*
+*Expected: 26/26 tests pass with 100% OK.*
 
-### 3. Start the API Server
+### 3. Start the Executive Financial Dashboard
 ```bash
-uvicorn src.api.main:app --reload --port 8000
+streamlit run src/dashboard/app.py
 ```
-Open interactive Swagger documentation: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+Open interactive dashboard: [http://localhost:8501](http://localhost:8501)
 
-### 4. Interactive Jupyter Notebooks
-Explore the analytical methodology:
-* `notebooks/01-EDA.ipynb` — Iowa telemetry distribution & ASAE standards.
-* `notebooks/02-Modeling.ipynb` — Scikit-Learn training, ROC curves, and confusion matrix.
-* `notebooks/03-Results.ipynb` — Financial savings simulation ($60,000+ per 250k-bu bin).
+### 4. Start the Microservice API
+```bash
+uvicorn src.api.main:app --port 8000
+```
+Open interactive Swagger documentation: [http://localhost:8000/docs](http://localhost:8000/docs)  
+Prometheus Metrics: [http://localhost:8000/metrics](http://localhost:8000/metrics)
+
+### 5. Production Docker Deployment
+```bash
+docker-compose up --build -d
+```
 
 ---
 
-## 📑 Technical Whitepaper
+## 📑 Technical Whitepaper & Immigration Dossier
 
-Read the complete engineering and agronomic specification for immigration or institutional review:  
+Read the complete engineering and agronomic specification for institutional or immigration review (*Matter of Dhanasar, EB-2 NIW*):  
 👉 [docs/whitepaper_grain_loss_mitigation.md](docs/whitepaper_grain_loss_mitigation.md)
 
 ---
