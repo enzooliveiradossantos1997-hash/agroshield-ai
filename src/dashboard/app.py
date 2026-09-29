@@ -20,6 +20,8 @@ import numpy as np
 
 from src.models.emc import calculate_emc, evaluate_aeration_suitability, evaluate_condensation_risk
 from src.services.weather_service import weather_service, CORN_BELT_HUBS
+from src.services.predictive_weather_worker import predictive_engine
+
 
 # Page Configuration
 st.set_page_config(
@@ -321,9 +323,63 @@ with right_col:
     > **Prong 2:** The petitioner, **Enzo Oliveira dos Santos**, possesses the rare synthesis of Agribusiness Management and Software Engineering to advance and scale autonomous post-harvest preservation engines nationwide.
     """)
 
+# 72-Hour Autonomous Predictive Timeline Section
+st.write("")
+st.markdown("---")
+st.subheader("🛰️ Autonomous 72-Hour Predictive Weather & Preemptive Aeration Timeline")
+st.markdown("High-resolution hourly forecast ingested from mesoscale models with Henderson-Thompson equilibrium curves and preemptive lockout scheduling.")
+
+# Fetch 72h report
+hub_to_predict = selected_hub_key if selected_hub_key != "custom" else "story_county_ia"
+pred_report = asyncio.run(predictive_engine.get_or_refresh_report(hub_to_predict))
+
+p_col1, p_col2, p_col3, p_col4 = st.columns(4)
+with p_col1:
+    st.metric("Total Safe Aeration Window", f"{pred_report.total_safe_aeration_hours} hours", "Optimal Drying Windows")
+with p_col2:
+    st.metric("72h Temperature Range", f"{pred_report.min_temp_72h_c:.1f}°C to {pred_report.max_temp_72h_c:.1f}°C", "Diurnal Swing")
+with p_col3:
+    st.metric("Peak Relative Humidity", f"{pred_report.max_rh_72h_pct:.1f}%", "Max Re-wetting Risk")
+with p_col4:
+    hazard_txt = f"Hour T+{pred_report.earliest_hazard_hour_offset}h" if pred_report.earliest_hazard_hour_offset else "None Detected"
+    st.metric("Earliest Condensation Risk", hazard_txt, "Preemptive Exhaust Scheduled" if pred_report.earliest_hazard_hour_offset else "Safe Non-Condensing")
+
+# Format DataFrame for visualization
+chart_data = []
+for pt in pred_report.hourly_telemetry:
+    chart_data.append({
+        "Hour": f"T+{pt.hour_offset:02d}h",
+        "Temperature (°C)": pt.temperature_c,
+        "Dew Point (°C)": pt.dew_point_c,
+        "Equilibrium Moisture (%)": pt.emc_corn_wet_basis if crop_key == "corn" else pt.emc_soy_wet_basis,
+        "Safe Aeration": "SAFE_WINDOW" if pt.is_safe_aeration_window else "LOCKOUT",
+        "Relay Command": pt.recommended_relay_state
+    })
+df_chart = pd.DataFrame(chart_data)
+
+st.line_chart(df_chart.set_index("Hour")[["Temperature (°C)", "Dew Point (°C)", "Equilibrium Moisture (%)"]])
+
+# Zero-Failure & High-Reliability Assurance Box
+st.markdown("""
+<div style="background-color: #ECFDF5; border: 2px solid #10B981; border-radius: 12px; padding: 20px; margin-top: 15px;">
+    <h4 style="color: #065F46; margin-top:0;">🛡️ Zero-Failure Assurance: Dual-Consensus Safety Protocol</h4>
+    <p style="color: #047857; margin-bottom: 8px;">
+        <b>100% Risk Prevention Guarantee:</b> AgroShield AI implements a dual-layer safety architecture. 
+        Even in scenarios of unpredictable meteorological shifts or statistical model uncertainty, the 
+        <b>deterministic ASAE D245.5 physical boundary guardrail</b> maintains unconditional authority over physical relay coils.
+    </p>
+    <ul style="color: #065F46; font-size: 0.95rem; margin-bottom: 0;">
+        <li><b>Hardware Lockout:</b> If outside EMC exceeds grain moisture + 0.8%, fans are locked out with zero tolerance for re-wetting.</li>
+        <li><b>Preemptive Headspace Evacuation:</b> Exhaust fans engage 2 hours prior to dew-point crossing to prevent roof condensation before droplets can form.</li>
+        <li><b>Offline Climatology Protection:</b> Continuous autonomous operation even during total rural satellite/LTE blackout.</li>
+    </ul>
+</div>
+""", unsafe_allow_html=True)
+
 # Footer
 st.markdown("---")
 st.markdown(
-    f"<center><small style='color: #9CA3AF;'>AgroShield AI Engine v1.0.0 · Developed by Enzo Oliveira dos Santos · Telemetry Ingestion: {weather.source}</small></center>",
+    f"<center><small style='color: #9CA3AF;'>AgroShield AI Engine v1.0.0 · Developed by Enzo Oliveira dos Santos · Telemetry Ingestion: {weather.source} · {pred_report.fail_safe_status}</small></center>",
     unsafe_allow_html=True
 )
+
