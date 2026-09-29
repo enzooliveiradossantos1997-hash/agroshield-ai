@@ -5,7 +5,11 @@
   <img src="https://img.shields.io/badge/Machine%20Learning-Random%20Forest%20Ensemble-blue?style=for-the-badge">
   <img src="https://img.shields.io/badge/Jurisdiction-Iowa%20Corn%20Belt-orange?style=for-the-badge">
   <img src="https://img.shields.io/badge/Build-Passing-brightgreen?style=for-the-badge">
-  <img src="https://img.shields.io/badge/Tests-26%20Passed-brightgreen?style=for-the-badge">
+  <img src="https://img.shields.io/badge/Tests-30%20Passed-brightgreen?style=for-the-badge">
+</p>
+
+<p align="center">
+  <img src="docs/images/agroshield_architecture_dashboard.jpg" alt="AgroShield AI Enterprise Architecture" width="100%">
 </p>
 
 > **Autonomous predictive and fail-safe system designed to prevent post-harvest grain spoilage, thermal shock condensation, and mycotoxin loss across United States storage bins.**  
