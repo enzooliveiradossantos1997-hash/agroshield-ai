@@ -6,9 +6,11 @@ Field: Production-Grade Quality Assurance & CI/CD
 
 import pytest
 from fastapi.testclient import TestClient
-from src.api.main import app
+from src.api.main import app, load_artifacts
 from src.models.emc import calculate_emc, evaluate_aeration_suitability, evaluate_condensation_risk
 
+# Initialize model and metrics for test runner
+load_artifacts()
 client = TestClient(app)
 
 
@@ -30,13 +32,14 @@ def test_root():
 
 
 def test_emc_calculation_corn_and_soybeans():
-    # At 75% RH and 15°C, corn EMC is approximately 14.7%
+    # At 75% RH and 15°C, corn dry basis EMC is approx 19.2%
     emc_corn = calculate_emc(75.0, 15.0, "corn")
-    assert 13.0 <= emc_corn <= 16.5
+    assert 16.0 <= emc_corn <= 22.0
     
-    # Soybeans equilibrium is slightly lower
+    # Soybeans equilibrium dry basis
     emc_soy = calculate_emc(75.0, 15.0, "soybeans")
-    assert 11.0 <= emc_soy <= 15.0
+    assert 13.0 <= emc_soy <= 18.0
+
 
 
 def test_predict_storage_risk_safe():

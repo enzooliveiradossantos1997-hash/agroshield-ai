@@ -1,0 +1,38 @@
+version: "3.8"
+
+services:
+  agroshield-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: agroshield-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health').read()"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - agroshield-net
+
+  prometheus:
+    image: prom/prometheus:v2.50.0
+    container_name: agroshield-prometheus
+    restart: unless-stopped
+    volumes:
+      - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    depends_on:
+      - agroshield-api
+    networks:
+      - agroshield-net
+
+networks:
+  agroshield-net:
+    driver: bridge
