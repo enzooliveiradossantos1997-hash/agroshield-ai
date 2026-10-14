@@ -346,7 +346,7 @@ async def autonomous_advisory(input_data: AutonomousAdvisoryInput):
     if input_data.county_hub == "custom_coordinates":
         if input_data.custom_lat is None or input_data.custom_lon is None:
             raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                status_code=getattr(status, "HTTP_422_UNPROCESSABLE_CONTENT", 422),
                 detail="custom_lat and custom_lon are required when county_hub is 'custom_coordinates'"
             )
         target_lat = input_data.custom_lat
