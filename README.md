@@ -136,10 +136,14 @@ docker-compose up --build -d
 
 ---
 
-## 📑 Technical Whitepaper & Immigration Dossier
+## 📑 Engineering Documentation, ADRs & Research
 
-Read the complete engineering and agronomic specification for institutional or immigration review (*Matter of Dhanasar, EB-2 NIW*):  
-👉 [docs/whitepaper_grain_loss_mitigation.md](docs/whitepaper_grain_loss_mitigation.md)
+* **Engineering & Agrophysical Whitepaper (Matter of Dhanasar, EB-2 NIW):**  
+  👉 [docs/whitepaper_grain_loss_mitigation.md](docs/whitepaper_grain_loss_mitigation.md)
+* **Architectural Decision Record (ADR-001):**  
+  👉 [docs/adr/ADR-001-dual-consensus-safety-guardrail.md](docs/adr/ADR-001-dual-consensus-safety-guardrail.md) — *Deterministic Agrophysical Override over Statistical Machine Learning*
+* **Executive Technical Article:**  
+  👉 [docs/articles/article_dual_consensus_agrophysics.md](docs/articles/article_dual_consensus_agrophysics.md) — *Why Pure Machine Learning is Dangerous for Critical Agricultural Infrastructure*
 
 ---
 
